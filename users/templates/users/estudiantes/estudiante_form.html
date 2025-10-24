@@ -3,7 +3,7 @@
 {% block title %}{% if form.instance.pk %}Editar Estudiante{% else %}Crear Estudiante{% endif %}{% endblock %}
 
 {% block content %}
-<div class="bg-white p-8 rounded-lg shadow-md max-w-lg mx-auto">
+<div class="bg-white p-8 rounded-lg shadow-md max-w-lg mx-auto max-h-screen overflow-y-auto">
     <h1 class="text-2xl font-bold text-gray-800 mb-6">
         {% if form.instance.pk %}
             Editar Estudiante

@@ -1,9 +1,10 @@
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
-from .forms import CursoForm, AsignarCursosForm, ClaseForm, PeriodoAcademicoForm, InscribirEstudiantesForm
+from .forms import CursoForm, AsignarCursosForm, ClaseForm, PeriodoAcademicoForm, InscribirEstudiantesForm, BitacoraForm
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
-from .models import PeriodoAcademico, Clase, Curso
+from .models import PeriodoAcademico, Clase, Curso, BitacoraPedagogica
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 import datetime
 from users.models import Maestro
 
@@ -172,3 +173,76 @@ def inscribir_estudiantes_clase(request, pk):
     }
     return render(request, 'academico/inscribir_estudiantes_form.html', context)
 
+class BitacoraListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    """
+    Muestra la lista de entradas del diario para una clase específica.
+    """
+    model = BitacoraPedagogica
+    template_name = 'academico/bitacora_list.html'
+    context_object_name = 'entradas'
+
+    def test_func(self):
+        # Seguridad: Solo el maestro de esta clase puede ver su diario
+        clase = get_object_or_404(Clase, pk=self.kwargs['clase_pk'])
+        return self.request.user.maestro == clase.maestro
+
+    def get_queryset(self):
+        # Filtramos las entradas para que sean solo de la clase actual
+        return BitacoraPedagogica.objects.filter(clase__pk=self.kwargs['clase_pk'])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['clase'] = get_object_or_404(Clase, pk=self.kwargs['clase_pk'])
+        return context
+
+class BitacoraCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = BitacoraPedagogica
+    form_class = BitacoraForm
+    template_name = 'academico/bitacora_form.html'
+
+    def test_func(self):
+        clase = get_object_or_404(Clase, pk=self.kwargs['clase_pk'])
+        return self.request.user.maestro == clase.maestro
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['clase'] = get_object_or_404(Clase, pk=self.kwargs['clase_pk'])
+        context['titulo'] = 'Nueva Entrada de Diario'
+        return context
+
+    def form_valid(self, form):
+        # Asignamos la clase automáticamente antes de guardar
+        form.instance.clase = get_object_or_404(Clase, pk=self.kwargs['clase_pk'])
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        # Redirige de vuelta a la lista del diario de esa clase
+        return reverse_lazy('bitacora_list', kwargs={'clase_pk': self.kwargs['clase_pk']})
+
+class BitacoraUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = BitacoraPedagogica
+    form_class = BitacoraForm
+    template_name = 'academico/bitacora_form.html'
+
+    def test_func(self):
+        return self.request.user.maestro == self.get_object().clase.maestro
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['clase'] = self.get_object().clase
+        context['titulo'] = 'Editar Entrada de Diario'
+        return context
+
+    def get_success_url(self):
+        return reverse_lazy('bitacora_list', kwargs={'clase_pk': self.object.clase.pk})
+
+class BitacoraDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = BitacoraPedagogica
+    template_name = 'academico/bitacora_confirm_delete.html'
+    context_object_name = 'entrada'
+
+    def test_func(self):
+        return self.request.user.maestro == self.get_object().clase.maestro
+
+    def get_success_url(self):
+        return reverse_lazy('bitacora_list', kwargs={'clase_pk': self.object.clase.pk})

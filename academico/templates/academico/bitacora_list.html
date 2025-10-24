@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Diario Pedagógico - {{ clase.curso.nombre }}{% endblock %}
+{% block content %}
+<div class="bg-white p-8 rounded-lg shadow-md max-w-4xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Diario Pedagógico</h1>
+            <p class="text-gray-600">Clase: {{ clase.curso.nombre }} ({{ clase.get_dia_semana_display }})</p>
+        </div>
+        <a href="{% url 'bitacora_create' clase.pk %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            + Nueva Entrada
+        </a>
+    </div>
+
+    <div class="space-y-4">
+        {% for entrada in entradas %}
+        <div class="border rounded-lg p-4">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-lg font-semibold text-gray-800">{{ entrada.fecha|date:"l, d \d\e F \d\e Y" }}</h3>
+                <div>
+                    <a href="{% url 'bitacora_update' clase_pk=clase.pk pk=entrada.pk %}" class="text-indigo-600 hover:text-indigo-900 text-sm">Editar</a>
+                    <a href="{% url 'bitacora_delete' clase_pk=clase.pk pk=entrada.pk %}" class="text-red-600 hover:text-red-900 text-sm ml-3">Eliminar</a>
+                </div>
+            </div>
+            <div class="prose max-w-none">
+                <strong>Temas Cubiertos:</strong>
+                <p>{{ entrada.temas_cubiertos|linebreaks }}</p>
+                {% if entrada.observaciones_generales %}
+                <strong>Observaciones Generales:</strong>
+                <p>{{ entrada.observaciones_generales|linebreaks }}</p>
+                {% endif %}
+                {% if entrada.observaciones_individuales %}
+                <strong>Observaciones Individuales:</strong>
+                <p>{{ entrada.observaciones_individuales|linebreaks }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-gray-500">No hay entradas en el diario para esta clase.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

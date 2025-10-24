@@ -40,14 +40,14 @@ class Estudiante(models.Model):
         related_name='estudiante' # Para acceder desde el user: user.estudiante
     )
     
-    # Campos específicos del estudiante
     matricula = models.CharField(max_length=20, unique=True, verbose_name='Matrícula')
     fecha_nacimiento = models.DateField(verbose_name='Fecha de Nacimiento')
+    nombre_padre = models.CharField(max_length=100, verbose_name='Nombre del Padre o Tutor')
+    telefono_contacto = models.CharField(max_length=15, blank=True, null=True, verbose_name='Teléfono de Contacto')
+    direccion = models.TextField(blank=True, null=True, verbose_name='Dirección Residencial')
+    contacto_emergencia = models.CharField(max_length=100, verbose_name='Contacto de Emergencia')
+    enfermedades_alergias = models.TextField(blank=True, null=True, verbose_name='Enfermedades o Alergias')
     
-    # Ejemplo de relaciones con otros modelos que crearás más adelante
-    # grado = models.ForeignKey('Grado', on_delete=models.SET_NULL, null=True, related_name='estudiantes')
-    # tutor = models.ForeignKey('Tutor', on_delete=models.SET_NULL, null=True, related_name='tutelados')
-
     class Meta:
         verbose_name = 'Estudiante'
         verbose_name_plural = 'Estudiantes'

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Curso, Clase, PeriodoAcademico
+from .models import Curso, Clase, PeriodoAcademico, BitacoraPedagogica
 from users.models import Estudiante
 
 class CursoForm(forms.ModelForm):
@@ -73,3 +73,22 @@ class InscribirEstudiantesForm(forms.Form):
         required=False,
         label="Seleccione los estudiantes a inscribir"
     )
+
+class BitacoraForm(forms.ModelForm):
+    class Meta:
+        model = BitacoraPedagogica
+        # Excluimos la 'clase' porque la tomaremos de la URL
+        fields = ['fecha', 'temas_cubiertos', 'observaciones_generales', 'observaciones_individuales']
+        widgets = {
+            'fecha': forms.DateInput(attrs={'type': 'date'}),
+            'temas_cubiertos': forms.Textarea(attrs={'rows': 4}),
+            'observaciones_generales': forms.Textarea(attrs={'rows': 4}),
+            'observaciones_individuales': forms.Textarea(attrs={'rows': 4}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            field.widget.attrs.update({
+                'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            })

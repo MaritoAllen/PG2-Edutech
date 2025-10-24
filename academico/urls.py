@@ -20,4 +20,8 @@ urlpatterns = [
     path('periodos/<int:pk>/editar/', views.PeriodoAcademicoUpdateView.as_view(), name='periodo_update'),
     path('periodos/<int:pk>/eliminar/', views.PeriodoAcademicoDeleteView.as_view(), name='periodo_delete'),
     path('clase/<int:pk>/inscribir/', views.inscribir_estudiantes_clase, name='clase_inscribir_estudiantes'),
+    path('bitacora/<int:clase_pk>/', views.BitacoraListView.as_view(), name='bitacora_list'),
+    path('bitacora/<int:clase_pk>/nuevo/', views.BitacoraCreateView.as_view(), name='bitacora_create'),
+    path('bitacora/<int:clase_pk>/<int:pk>/editar/', views.BitacoraUpdateView.as_view(), name='bitacora_update'),
+    path('bitacora/<int:clase_pk>/<int:pk>/eliminar/', views.BitacoraDeleteView.as_view(), name='bitacora_delete'),
 ]
