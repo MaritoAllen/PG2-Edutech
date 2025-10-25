@@ -57,29 +57,77 @@ class Estudiante(models.Model):
         return self.user.get_full_name()
 
 class Maestro(models.Model):
-    """
-    Perfil para usuarios de tipo Maestro.
-    Contiene la información profesional y de contacto específica de un maestro.
-    """
+    
+    # --- NUEVA CLASE PARA EL ESTADO ---
+    class EstadoMaestro(models.TextChoices):
+        ACTIVO = 'ACTIVO', 'Activo'
+        INACTIVO = 'INACTIVO', 'Inactivo'
+        LICENCIA = 'LICENCIA', 'Con Licencia'
+
+    # --- CAMPOS EXISTENTES ---
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         primary_key=True,
-        related_name='maestro' # Para acceder desde el user: user.maestro
+        related_name='maestro'
     )
-    
-    # Campos específicos del maestro
     numero_empleado = models.CharField(max_length=20, unique=True, verbose_name='Número de Empleado')
-    especialidad = models.CharField(max_length=100, verbose_name='Especialidad Principal')
+    especialidad = models.CharField(max_length=100, verbose_name='Especialidad Principal (Ej. Matemáticas)')
     fecha_contratacion = models.DateField(verbose_name='Fecha de Contratación')
-    telefono_contacto = models.CharField(max_length=15, blank=True, null=True, verbose_name='Teléfono de Contacto')
+    telefono_contacto = models.CharField(max_length=20, blank=True, verbose_name='Teléfono Principal')
     cursos = models.ManyToManyField(
         Curso,
-        blank=True, # Un maestro puede no tener cursos asignados inicialmente.
+        blank=True,
         related_name='maestros',
         verbose_name='Cursos Asignados'
     )
 
+    # --- NUEVOS CAMPOS PARA EL PERFIL PROFESIONAL ---
+    
+    # Campo para una foto
+    foto_perfil = models.ImageField(
+        upload_to='fotos_perfil/maestros/', 
+        null=True, 
+        blank=True, 
+        verbose_name="Foto de Perfil"
+    )
+    
+    # Información Académica
+    titulo_academico = models.CharField(
+        max_length=255, 
+        blank=True, 
+        verbose_name="Título Académico Principal"
+    )
+    
+    # Información Pública/Personal
+    biografia = models.TextField(
+        blank=True, 
+        verbose_name="Biografía Corta / Resumen Profesional"
+    )
+    direccion = models.TextField(
+        blank=True, 
+        verbose_name="Dirección de Contacto"
+    )
+
+    # Información de Emergencia
+    contacto_emergencia_nombre = models.CharField(
+        max_length=100, 
+        blank=True, 
+        verbose_name="Nombre de Contacto de Emergencia"
+    )
+    contacto_emergencia_telefono = models.CharField(
+        max_length=20, 
+        blank=True, 
+        verbose_name="Teléfono de Emergencia"
+    )
+    
+    # Información Administrativa
+    estado = models.CharField(
+        max_length=10, 
+        choices=EstadoMaestro.choices, 
+        default=EstadoMaestro.ACTIVO,
+        verbose_name="Estado Administrativo"
+    )
 
     class Meta:
         verbose_name = 'Maestro'

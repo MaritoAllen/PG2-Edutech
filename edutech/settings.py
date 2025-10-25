@@ -38,6 +38,7 @@ LANGUAGE_CODE = 'es-GT'
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -49,6 +50,20 @@ INSTALLED_APPS = [
     'academico',
     'portal',
 ]
+
+JAZZMIN_SETTINGS = {
+    "site_title": "Gestión Escolar",
+    "site_header": "Gestión Escolar",
+    "site_brand": "Gestión Escolar",
+    "welcome_sign": "Bienvenido al Panel de Administración",
+    "topmenu_links": [
+        {"name": "Inicio", "url": "admin:index"},
+        {"app": "academia", "name": "Academia"},
+        {"app": "usuarios", "name": "Usuarios"},
+    ],
+    "show_sidebar": True,
+    "navigation_expanded": True,
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

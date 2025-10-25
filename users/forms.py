@@ -13,7 +13,13 @@ class MaestroForm(forms.ModelForm):
         # Campos del modelo Maestro + campos añadidos
         fields = [
             'first_name', 'last_name', 'email',
-            'numero_empleado', 'especialidad', 'fecha_contratacion', 'telefono_contacto'
+            'numero_empleado', 'especialidad', 'fecha_contratacion', 'telefono_contacto',
+            'foto_perfil',
+            'titulo_academico',
+            'biografia',
+            'direccion',
+            'contacto_emergencia_nombre',
+            'contacto_emergencia_telefono'
         ]
         widgets = {
             'fecha_contratacion': forms.DateInput(attrs={'type': 'date'}),
@@ -30,6 +36,13 @@ class MaestroForm(forms.ModelForm):
         # Añadimos clases de Tailwind a todos los campos
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+        
+        self.order_fields([
+            'first_name', 'last_name', 'email', 
+            'foto_perfil', 'telefono_contacto', 'titulo_academico',
+            'especialidad', 'biografia', 'direccion', 
+            'contacto_emergencia_nombre', 'contacto_emergencia_telefono'
+        ])
 
     def form_valid(self, form):
         # Usamos una transacción para que todo sea una única operación

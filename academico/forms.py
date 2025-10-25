@@ -1,5 +1,5 @@
 from django import forms
-from .models import Curso, Clase, PeriodoAcademico, BitacoraPedagogica
+from .models import Curso, Clase, PeriodoAcademico, BitacoraPedagogica, Cargo
 from users.models import Estudiante
 
 class CursoForm(forms.ModelForm):
@@ -78,12 +78,25 @@ class BitacoraForm(forms.ModelForm):
     class Meta:
         model = BitacoraPedagogica
         # Excluimos la 'clase' porque la tomaremos de la URL
-        fields = ['fecha', 'temas_cubiertos', 'observaciones_generales', 'observaciones_individuales']
+        fields = [
+            'fecha', 
+            'objetivos_sesion',
+            'temas_cubiertos', 
+            'recursos_usados',
+            'adaptacion_curricular',
+            'observaciones_generales',
+            'reflexiones_logros',
+            'evidencia_archivo',
+            'evidencia_foto',
+        ]
         widgets = {
             'fecha': forms.DateInput(attrs={'type': 'date'}),
+            'objetivos_sesion': forms.Textarea(attrs={'rows': 3}),
             'temas_cubiertos': forms.Textarea(attrs={'rows': 4}),
+            'recursos_usados': forms.Textarea(attrs={'rows': 3}),
+            'adaptacion_curricular': forms.Textarea(attrs={'rows': 3}),
             'observaciones_generales': forms.Textarea(attrs={'rows': 4}),
-            'observaciones_individuales': forms.Textarea(attrs={'rows': 4}),
+            'reflexiones_logros': forms.Textarea(attrs={'rows': 3}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -92,3 +105,23 @@ class BitacoraForm(forms.ModelForm):
             field.widget.attrs.update({
                 'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
             })
+
+class CargoForm(forms.ModelForm):
+    class Meta:
+        model = Cargo
+        # Dejamos fuera 'estado' porque se manejará automáticamente
+        fields = [
+            'estudiante', 
+            'periodo', 
+            'concepto', 
+            'monto', 
+            'fecha_vencimiento'
+        ]
+        widgets = {
+            'fecha_vencimiento': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
