@@ -1,12 +1,11 @@
 # portal/forms.py
 from django import forms
-from academico.models import Actividad, Entrega, AsistenciaClase
+from academico.models import Actividad, Entrega, AsistenciaClase, Competencia, Planificacion
 from .models import Noticia, Notificacion
 
 class ActividadForm(forms.ModelForm):
     class Meta:
         model = Actividad
-        # 👇 Añade 'recurso_adjunto' a la lista 👇
         fields = ['titulo', 'descripcion', 'fecha_entrega', 'recurso_adjunto']
         widgets = {
             'fecha_entrega': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
@@ -100,3 +99,37 @@ class AsistenciaForm(forms.Form):
         widget=forms.RadioSelect,
         required=True
     )
+
+class PlanificacionForm(forms.ModelForm):
+    
+    class Meta:
+        model = Planificacion
+        fields = [
+            'titulo', 'fecha_inicio', 'fecha_fin',
+            'objetivos', 'actividades_planificadas', 'recursos_planificados',
+            'competencias'
+        ]
+        widgets = {
+            'fecha_inicio': forms.DateInput(attrs={'type': 'date'}),
+            'fecha_fin': forms.DateInput(attrs={'type': 'date'}),
+            'objetivos': forms.Textarea(attrs={'rows': 3}),
+            'actividades_planificadas': forms.Textarea(attrs={'rows': 5}),
+            'recursos_planificados': forms.Textarea(attrs={'rows': 3}),
+            'competencias': forms.CheckboxSelectMultiple,
+        }
+
+    def __init__(self, *args, **kwargs):
+        # Obtenemos la 'clase' que pasamos desde la vista
+        clase = kwargs.pop('clase', None) 
+        super().__init__(*args, **kwargs)
+
+        if clase:
+            # Filtramos el queryset de competencias para mostrar
+            # SOLO las que pertenecen al curso de esta clase.
+            self.fields['competencias'].queryset = Competencia.objects.filter(curso=clase.curso)
+        
+        for field_name, field in self.fields.items():
+            if field_name != 'competencias':
+                field.widget.attrs.update({
+                    'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+                })

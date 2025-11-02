@@ -301,3 +301,50 @@ class AsistenciaClase(models.Model):
 
     def __str__(self):
         return f"{self.estudiante.user.get_full_name()} - {self.clase.curso.nombre} ({self.fecha})"
+    
+class Competencia(models.Model):
+    """
+    Representa una competencia o estándar de aprendizaje,
+    generalmente vinculada a un curso y definida por el admin.
+    Ej: "Resuelve problemas de suma y resta" (para Matemáticas 1ro)
+    """
+    curso = models.ForeignKey(Curso, on_delete=models.CASCADE, related_name='competencias')
+    codigo = models.CharField(max_length=20, unique=True, blank=True, null=True, verbose_name="Código (Opcional)")
+    descripcion = models.TextField(verbose_name="Descripción de la Competencia")
+    
+    class Meta:
+        verbose_name = "Competencia"
+        verbose_name_plural = "Competencias"
+        ordering = ['curso', 'codigo']
+
+    def __str__(self):
+        return f"{self.curso.nombre} - {self.descripcion[:50]}..."
+
+class Planificacion(models.Model):
+    """
+    La planificación semanal o mensual de un maestro para una clase.
+    """
+    clase = models.ForeignKey(Clase, on_delete=models.CASCADE, related_name='planificaciones')
+    titulo = models.CharField(max_length=200, verbose_name="Título del Plan (Ej. Semana 1: Fracciones)")
+    fecha_inicio = models.DateField(verbose_name="Fecha de Inicio")
+    fecha_fin = models.DateField(verbose_name="Fecha de Fin")
+    
+    objetivos = models.TextField(blank=True, verbose_name="Objetivos de Aprendizaje")
+    actividades_planificadas = models.TextField(blank=True, verbose_name="Actividades Planificadas")
+    recursos_planificados = models.TextField(blank=True, verbose_name="Recursos a Utilizar")
+    
+    # El "Alineamiento"
+    competencias = models.ManyToManyField(
+        Competencia,
+        blank=True,
+        related_name='planificaciones',
+        verbose_name="Competencias a Desarrollar"
+    )
+
+    class Meta:
+        verbose_name = "Planificación"
+        verbose_name_plural = "Planificaciones"
+        ordering = ['-fecha_inicio']
+
+    def __str__(self):
+        return self.titulo

@@ -5,19 +5,12 @@ from django.conf import settings
 from academico.models import Curso
 
 class User(AbstractUser):
-    """
-    Modelo de Usuario Personalizado.
-    Hereda de AbstractUser para mantener todo el sistema de autenticación de Django,
-    pero añade un campo 'user_type' para diferenciar roles.
-    """
     class UserType(models.TextChoices):
         ESTUDIANTE = 'ESTUDIANTE', 'Estudiante'
         MAESTRO = 'MAESTRO', 'Maestro'
         ADMIN = 'ADMIN', 'Admin'
-        # Puedes añadir más roles aquí en el futuro (ej. PADRE, SECRETARIA, etc.)
+        PADRE = 'PADRE', 'Padre de Familia'
 
-    # El campo 'username' de AbstractUser será el identificador principal
-    # (ej. matrícula para estudiantes, código de empleado para maestros).
     user_type = models.CharField(
         max_length=20,
         choices=UserType.choices,
@@ -28,16 +21,11 @@ class User(AbstractUser):
         return f"{self.get_full_name()} ({self.get_user_type_display()})"
 
 class Estudiante(models.Model):
-    """
-    Perfil para usuarios de tipo Estudiante.
-    Contiene la información académica y personal específica de un estudiante.
-    """
-    # Relación uno a uno con el modelo de usuario. Si se elimina el usuario, se elimina el perfil.
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        primary_key=True, # El usuario es la clave primaria de este modelo.
-        related_name='estudiante' # Para acceder desde el user: user.estudiante
+        primary_key=True,
+        related_name='estudiante'
     )
     
     matricula = models.CharField(max_length=20, unique=True, verbose_name='Matrícula')
@@ -53,18 +41,15 @@ class Estudiante(models.Model):
         verbose_name_plural = 'Estudiantes'
 
     def __str__(self):
-        # Accedemos a los datos del modelo User relacionado
         return self.user.get_full_name()
 
 class Maestro(models.Model):
-    
-    # --- NUEVA CLASE PARA EL ESTADO ---
     class EstadoMaestro(models.TextChoices):
         ACTIVO = 'ACTIVO', 'Activo'
         INACTIVO = 'INACTIVO', 'Inactivo'
         LICENCIA = 'LICENCIA', 'Con Licencia'
+        PADRE = 'PADRE', 'Padre de Familia'
 
-    # --- CAMPOS EXISTENTES ---
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -82,9 +67,6 @@ class Maestro(models.Model):
         verbose_name='Cursos Asignados'
     )
 
-    # --- NUEVOS CAMPOS PARA EL PERFIL PROFESIONAL ---
-    
-    # Campo para una foto
     foto_perfil = models.ImageField(
         upload_to='fotos_perfil/maestros/', 
         null=True, 
@@ -92,14 +74,12 @@ class Maestro(models.Model):
         verbose_name="Foto de Perfil"
     )
     
-    # Información Académica
     titulo_academico = models.CharField(
         max_length=255, 
         blank=True, 
         verbose_name="Título Académico Principal"
     )
     
-    # Información Pública/Personal
     biografia = models.TextField(
         blank=True, 
         verbose_name="Biografía Corta / Resumen Profesional"
@@ -109,7 +89,6 @@ class Maestro(models.Model):
         verbose_name="Dirección de Contacto"
     )
 
-    # Información de Emergencia
     contacto_emergencia_nombre = models.CharField(
         max_length=100, 
         blank=True, 
@@ -121,7 +100,6 @@ class Maestro(models.Model):
         verbose_name="Teléfono de Emergencia"
     )
     
-    # Información Administrativa
     estado = models.CharField(
         max_length=10, 
         choices=EstadoMaestro.choices, 
@@ -132,6 +110,29 @@ class Maestro(models.Model):
     class Meta:
         verbose_name = 'Maestro'
         verbose_name_plural = 'Maestros'
+
+    def __str__(self):
+        return self.user.get_full_name()
+
+class PadreDeFamilia(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        primary_key=True,
+        related_name='padre_familia'
+    )
+    
+    hijos = models.ManyToManyField(
+        Estudiante,
+        related_name='padres',
+        verbose_name="Hijos/Tutelados"
+    )
+    
+    telefono_contacto = models.CharField(max_length=20, blank=True, verbose_name='Teléfono de Contacto')
+
+    class Meta:
+        verbose_name = 'Padre de Familia'
+        verbose_name_plural = 'Padres de Familia'
 
     def __str__(self):
         return self.user.get_full_name()

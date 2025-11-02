@@ -35,6 +35,7 @@ class Notificacion(models.Model):
         TODOS = 'TODOS', 'Todos los Usuarios'
         ESTUDIANTES = 'ESTUDIANTES', 'Solo Estudiantes'
         MAESTROS = 'MAESTROS', 'Solo Maestros'
+        PADRES = 'PADRES', 'Solo Padres de Familia'
 
     autor = models.ForeignKey(
         settings.AUTH_USER_MODEL,

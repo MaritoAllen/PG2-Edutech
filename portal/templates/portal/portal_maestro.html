@@ -7,7 +7,7 @@
     
     <div class="border-b pb-4 mb-6">
         <h1 class="text-3xl font-bold text-gray-800">
-            Bienvenido, Profesor {{ user.last_name }}
+            Bienvenido(a), Profesor {{ user.last_name }}
         </h1>
         <p class="text-gray-600">Este es su portal de maestro.</p>
     </div>
@@ -30,6 +30,9 @@
                             </p>
                         </div>
                         <div>
+                            <a href="{% url 'planificacion_list' clase.pk %}" class="bg-purple-500 hover:bg-purple-700 text-white text-sm font-bold py-2 px-3 rounded">
+                                Planificación
+                            </a>
                             <a href="{% url 'tomar_asistencia' clase.pk %}" class="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-2 px-3 rounded">
                                 Tomar Asistencia
                             </a>

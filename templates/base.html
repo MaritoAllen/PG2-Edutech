@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <title>{% block title %}Sistema de Gestión Escolar{% endblock title %}</title>
+    <title>{% block title %}Sistema de Edutech{% endblock title %}</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -17,7 +17,7 @@
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center h-16">
                 <div class="flex-shrink-0">
-                    <a href="" class="text-white text-2xl font-bold">🎓 Gestión Escolar</a>
+                    <a href="" class="text-white text-2xl font-bold">🎓 Edutech</a>
                 </div>
                 
                 <div class="hidden md:block">
@@ -28,6 +28,14 @@
                         <a href="{% url 'estudiante_list' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Estudiantes</a>
                         <a href="{% url 'horario' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Horario</a>
                         <a href="{% url 'periodo_list' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Periodos</a>
+                        {% if user.is_authenticated %}
+                            <form action="{% url 'logout' %}" method="post" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                    Cerrar Sesión 🚪
+                                </button>
+                            </form>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -53,7 +61,7 @@
     <footer class="bg-gray-800 mt-auto">
         <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
             <p class="text-center text-sm text-gray-400">
-                &copy; {% now "Y" %} Sistema de Gestión Escolar. Todos los derechos reservados.
+                &copy; {% now "Y" %} Sistema de Edutech. Todos los derechos reservados.
             </p>
         </div>
     </footer>

@@ -3,11 +3,14 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from .models import User, Maestro, Estudiante
 from .forms import MaestroForm, EstudianteForm
-from django.db import transaction # Para asegurar que ambas creaciones sean exitosas
+from django.db import transaction
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import TemplateView
+from academico.models import PeriodoAcademico, Clase, Actividad, Entrega
+from portal.models import Noticia, Notificacion
+from django.db.models import OuterRef, Subquery, Exists, Q, DecimalField
 
-# Create your views here.
 def maestros(request):
-    # Lógica para manejar la vista de maestros
     lista_de_maestros = Maestro.objects.all()
     
     return render(request, 'users/maestros/lista.html', {'lista_de_maestros': lista_de_maestros})
@@ -19,18 +22,16 @@ class MaestroCreateView(CreateView):
     success_url = reverse_lazy('maestro_list')
 
     def form_valid(self, form):
-        # Usamos una transacción para asegurar la integridad de los datos
         with transaction.atomic():
             # Crear el usuario primero
             user = User.objects.create_user(
-                username=form.cleaned_data['numero_empleado'], # Usamos el número de empleado como username
-                password='passwordtemporal123',  # Puedes generar una contraseña aleatoria
+                username=form.cleaned_data['numero_empleado'],
+                password='passwordtemporal123',
                 first_name=form.cleaned_data['first_name'],
                 last_name=form.cleaned_data['last_name'],
                 email=form.cleaned_data['email'],
                 user_type=User.UserType.MAESTRO
             )
-            # Asignar el usuario creado al perfil del maestro
             form.instance.user = user
         return super().form_valid(form)
 
@@ -42,7 +43,6 @@ class MaestroUpdateView(UpdateView):
     
     def form_valid(self, form):
         with transaction.atomic():
-            # Actualizar los datos del usuario relacionado
             maestro = self.get_object()
             user = maestro.user
             user.first_name = form.cleaned_data['first_name']
@@ -55,8 +55,6 @@ class MaestroDeleteView(DeleteView):
     model = Maestro
     template_name = 'usuarios/maestro_confirm_delete.html'
     success_url = reverse_lazy('maestro_list')
-
-# ======================= VISTAS PARA ESTUDIANTES =======================
 
 class EstudianteListView(ListView):
     model = Estudiante
@@ -72,7 +70,7 @@ class EstudianteCreateView(CreateView):
     def form_valid(self, form):
         with transaction.atomic():
             user = User.objects.create_user(
-                username=form.cleaned_data['matricula'], # Usamos la matrícula como username
+                username=form.cleaned_data['matricula'],
                 password='passwordtemporal123',
                 first_name=form.cleaned_data['first_name'],
                 last_name=form.cleaned_data['last_name'],

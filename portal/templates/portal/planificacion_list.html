@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Planificación - {{ clase.curso.nombre }}{% endblock %}
+
+{% block content %}
+<div class="bg-white p-8 rounded-lg shadow-md max-w-4xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Planificación</h1>
+            <p class="text-gray-600">Clase: {{ clase.curso.nombre }}</p>
+        </div>
+        <a href="{% url 'planificacion_create' clase.pk %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            + Nuevo Plan
+        </a>
+    </div>
+
+    <div class="space-y-4">
+        {% for plan in planificaciones %}
+        <div class="border rounded-lg p-4">
+            <h3 class="font-semibold text-lg">{{ plan.titulo }}</h3>
+            <p class="text-sm font-mono text-gray-500">{{ plan.fecha_inicio|date:"d/m/Y" }} - {{ plan.fecha_fin|date:"d/m/Y" }}</p>
+            <div class="prose max-w-none mt-2">
+                <strong>Objetivos:</strong>
+                <p>{{ plan.objetivos|linebreaks|truncatewords:30 }}</p>
+                <strong>Competencias:</strong>
+                <ul>
+                    {% for comp in plan.competencias.all %}
+                        <li>{{ comp.descripcion }}</li>
+                    {% empty %}
+                        <li>No hay competencias alineadas.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="mt-4 text-sm">
+                <a href="{% url 'planificacion_update' plan.pk %}" class="text-indigo-600 hover:underline">Editar</a>
+                <a href="{% url 'planificacion_delete' plan.pk %}" class.="text-red-600 hover:underline ml-4">Eliminar</a>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-gray-500">No hay planificaciones creadas para esta clase.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

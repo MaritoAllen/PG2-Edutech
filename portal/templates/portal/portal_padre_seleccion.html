@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Portal de Padre de Familia{% endblock %}
+
+{% block content %}
+<div class="bg-white p-8 rounded-lg shadow-md max-w-lg mx-auto">
+    <div class="border-b pb-4 mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">
+            Bienvenido(a), {{ user.get_full_name }}
+        </h1>
+        <p class="text-gray-600">Este es su portal de padre de familia.</p>
+    </div>
+
+    <div>
+        <h2 class="text-2xl font-semibold text-gray-700 mb-4">
+            Seleccione un Estudiante
+        </h2>
+        {% if hijos %}
+        <div class="space-y-4">
+            {% for hijo in hijos %}
+            <a href="{% url 'portal_padre_ver_estudiante' hijo.pk %}" 
+               class="block w-full text-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded transition duration-200">
+                Ver Portal de {{ hijo.user.get_full_name }}
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500">Aún no tiene estudiantes vinculados a su cuenta. Contacte a la administración.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

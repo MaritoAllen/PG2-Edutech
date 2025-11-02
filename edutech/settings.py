@@ -52,9 +52,9 @@ INSTALLED_APPS = [
 ]
 
 JAZZMIN_SETTINGS = {
-    "site_title": "Gestión Escolar",
-    "site_header": "Gestión Escolar",
-    "site_brand": "Gestión Escolar",
+    "site_title": "Edutech",
+    "site_header": "Edutech",
+    "site_brand": "Edutech",
     "welcome_sign": "Bienvenido al Panel de Administración",
     "topmenu_links": [
         {"name": "Inicio", "url": "admin:index"},
@@ -76,6 +76,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'edutech.urls'
+
+LOGIN_REDIRECT_URL = 'home'
 
 TEMPLATES = [
     {

@@ -3,18 +3,28 @@
 {% block title %}Mi Portal{% endblock %}
 
 {% block content %}
+<div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
+  <p class="font-bold">Modo de Vista de Padre</p>
+  <p>Estás viendo el portal de <strong>{{ estudiante.user.get_full_name }}</strong>. 
+     <a href="{% url 'portal_padre' %}" class="font-bold underline">Volver a la selección</a>
+  </p>
+</div>
+
 <div class="bg-white p-8 rounded-lg shadow-md max-w-6xl mx-auto">
-    
     <div class="border-b pb-4 mb-6 flex justify-between items-start">
         <div>
             <h1 class="text-3xl font-bold text-gray-800">
-                ¡Bienvenido(a), {{ user.first_name }}!
+                ¡Bienvenido, {{ user.first_name }}!
             </h1>
             <p class="text-gray-600">Este es tu portal de estudiante.</p>
         </div>
-        <a href="{% url 'mis_calificaciones' %}" 
+        <!-- <a href="{% url 'mis_calificaciones' %}" 
            class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded whitespace-nowrap">
             Ver Mis Calificaciones
+        </a> -->
+        <a href="{% url 'portal_padre_calificaciones' estudiante.pk %}" 
+            class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded whitespace-nowrap">
+                Ver Notas
         </a>
     </div>
 
@@ -60,35 +70,35 @@
 
         {% if actividades %}
             <div class="bg-white divide-y divide-gray-200 border rounded-lg">
-                {% for actividad in actividades %}
-                    <div class="p-4 flex justify-between items-center">
-                        <div>
-                            <p class="font-bold text-gray-800">{{ actividad.titulo }}</p>
-                            <p class="text-sm text-gray-600">
-                                {{ actividad.clase.curso.nombre }} - 
-                                <span class="font-mono">Fecha Límite: {{ actividad.fecha_entrega|date:"d/m/Y H:i" }}</span>
-                            </p>
-                        </div>
-                        <div>
-                            {% if actividad.fue_entregada %}
-                                {% if actividad.calificacion_obtenida is not None %}
-                                    <span class="px-3 py-1 text-xs font-semibold text-blue-800 bg-blue-200 rounded-full">
-                                        Calificado: {{ actividad.calificacion_obtenida }}
-                                    </span>
-                                {% else %}
-                                    <span class="px-3 py-1 text-xs font-semibold text-green-800 bg-green-200 rounded-full">
-                                        Entregado
-                                    </span>
-                                {% endif %}
+            {% for actividad in actividades %}
+                <div class="p-4 flex justify-between items-center">
+                    <div>
+                        <p class="font-bold text-gray-800">{{ actividad.titulo }}</p>
+                        <p class="text-sm text-gray-600">
+                            {{ actividad.clase.curso.nombre }} - 
+                            <span class="font-mono">Fecha Límite: {{ actividad.fecha_entrega|date:"d/m/Y H:i" }}</span>
+                        </p>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        {% if actividad.fue_entregada %}
+                            {% if actividad.calificacion_obtenida is not None %}
+                                <span class="px-3 py-1 text-xs font-semibold text-blue-800 bg-blue-200 rounded-full">
+                                    Calificado: {{ actividad.calificacion_obtenida }}
+                                </span>
                             {% else %}
-                                <span class="px-3 py-1 text-xs font-semibold text-red-800 bg-red-200 rounded-full">
-                                    Pendiente
+                                <span class="px-3 py-1 text-xs font-semibold text-green-800 bg-green-200 rounded-full">
+                                    Entregado (Sin calificar)
                                 </span>
                             {% endif %}
-                            <a href="{% url 'actividad_detail' actividad.pk %}" class="ml-4 text-indigo-600 hover:underline text-sm">Ver Detalles</a>
-                        </div>
+                        {% else %}
+                            <span class="px-3 py-1 text-xs font-semibold text-red-800 bg-red-200 rounded-full">
+                                Pendiente
+                            </span>
+                        {% endif %}
                     </div>
-                {% endfor %}
+                </div>
+            {% endfor %}
             </div>
         {% else %}
             <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4" role="alert">
