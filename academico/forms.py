@@ -1,5 +1,5 @@
 from django import forms
-from .models import Curso, Clase, PeriodoAcademico, BitacoraPedagogica, Cargo
+from .models import Curso, Clase, PeriodoAcademico, BitacoraPedagogica, Cargo, Pago
 from users.models import Estudiante
 
 class CursoForm(forms.ModelForm):
@@ -123,5 +123,31 @@ class CargoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+
+class PagoForm(forms.ModelForm):
+    """
+    Formulario para registrar un pago nuevo.
+    """
+    class Meta:
+        model = Pago
+        # Los campos que el contador llenará:
+        fields = ['monto', 'metodo_pago', 'referencia']
+        widgets = {
+            'referencia': forms.TextInput(attrs={'placeholder': 'Ej. No. de boleta, ID de transacción'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        # Haremos que el monto del pago sea por defecto el saldo pendiente.
+        # Pasaremos el 'cargo' desde la vista.
+        cargo = kwargs.pop('cargo', None)
+        super().__init__(*args, **kwargs)
+
+        if cargo:
+            # Ponemos el saldo pendiente como el monto por defecto
+            self.fields['monto'].initial = cargo.saldo_pendiente
+
+        # Aplicamos las clases de Tailwind
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'

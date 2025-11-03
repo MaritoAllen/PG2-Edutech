@@ -2,7 +2,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
-from academico.models import Curso
+from academico.models import Curso, Grado
 
 class User(AbstractUser):
     class UserType(models.TextChoices):
@@ -26,6 +26,14 @@ class Estudiante(models.Model):
         on_delete=models.CASCADE,
         primary_key=True,
         related_name='estudiante'
+    )
+    grado = models.ForeignKey(
+        Grado,
+        on_delete=models.SET_NULL, # Si se borra el grado, no se borra el estudiante
+        null=True,
+        blank=True,
+        related_name="estudiantes",
+        verbose_name="Grado Asignado"
     )
     
     matricula = models.CharField(max_length=20, unique=True, verbose_name='Matrícula')

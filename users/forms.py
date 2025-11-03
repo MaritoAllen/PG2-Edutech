@@ -81,7 +81,8 @@ class EstudianteForm(forms.ModelForm):
             'first_name', 'last_name', 'email',
             'matricula', 'fecha_nacimiento',
             'nombre_padre', 'telefono_contacto', 'direccion',
-            'contacto_emergencia', 'enfermedades_alergias'
+            'contacto_emergencia', 'enfermedades_alergias',
+            'grado'
         ]
         widgets = {
             'fecha_nacimiento': forms.DateInput(attrs={'type': 'date'}),

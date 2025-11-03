@@ -6,9 +6,11 @@ from .forms import MaestroForm, EstudianteForm
 from django.db import transaction
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import TemplateView
-from academico.models import PeriodoAcademico, Clase, Actividad, Entrega
+from academico.models import PeriodoAcademico, Clase, Actividad, Entrega, Cargo, Pago
 from portal.models import Noticia, Notificacion
 from django.db.models import OuterRef, Subquery, Exists, Q, DecimalField
+from django.utils import timezone
+from datetime import timedelta
 
 def maestros(request):
     lista_de_maestros = Maestro.objects.all()
@@ -67,6 +69,7 @@ class EstudianteCreateView(CreateView):
     template_name = 'users/estudiantes/estudiante_form.html'
     success_url = reverse_lazy('estudiante_list')
 
+    @transaction.atomic
     def form_valid(self, form):
         with transaction.atomic():
             user = User.objects.create_user(
@@ -78,7 +81,53 @@ class EstudianteCreateView(CreateView):
                 user_type=User.UserType.ESTUDIANTE
             )
             form.instance.user = user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+
+        nuevo_grado = self.object.grado
+        if nuevo_grado:
+            self.object.clases_inscritas.set(nuevo_grado.clases.all())
+            self._generar_cargos(self.object, nuevo_grado)
+
+        return response
+    
+    def _generar_cargos(self, estudiante, grado):
+        """Crea los cargos de Inscripción, Útiles y 12 Colegiaturas."""
+        hoy = timezone.now().date()
+
+        # 1. Cargo de Inscripción (solo si no existe)
+        if grado.monto_inscripcion > 0 and not Cargo.objects.filter(estudiante=estudiante, concepto="Inscripción").exists():
+            Cargo.objects.create(
+                estudiante=estudiante,
+                periodo=grado.periodo,
+                concepto="Inscripción",
+                monto=grado.monto_inscripcion,
+                fecha_vencimiento=hoy + timedelta(days=30)
+            )
+
+        # 2. Cargo de Útiles/Libros (solo si no existe)
+        if grado.monto_utiles > 0 and not Cargo.objects.filter(estudiante=estudiante, concepto="Útiles y Libros").exists():
+            Cargo.objects.create(
+                estudiante=estudiante,
+                periodo=grado.periodo,
+                concepto="Útiles y Libros",
+                monto=grado.monto_utiles,
+                fecha_vencimiento=hoy + timedelta(days=30)
+            )
+
+        # 3. Cargos de Colegiaturas (12 meses, solo si no existen)
+        if grado.monto_colegiatura_mensual > 0:
+            for i in range(12):
+                mes_str = (hoy + timedelta(days=30*i)).strftime('%Y-%m')
+                concepto = f"Colegiatura {mes_str}"
+                
+                if not Cargo.objects.filter(estudiante=estudiante, concepto=concepto).exists():
+                    Cargo.objects.create(
+                        estudiante=estudiante,
+                        periodo=grado.periodo,
+                        concepto=concepto,
+                        monto=grado.monto_colegiatura_mensual,
+                        fecha_vencimiento=(hoy + timedelta(days=30*i)).replace(day=5) # Vence el día 5
+                    )
 
 class EstudianteUpdateView(UpdateView):
     model = Estudiante

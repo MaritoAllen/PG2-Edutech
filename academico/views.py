@@ -1,9 +1,9 @@
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
-from .forms import CursoForm, AsignarCursosForm, ClaseForm, PeriodoAcademicoForm, InscribirEstudiantesForm, BitacoraForm
+from .forms import CursoForm, AsignarCursosForm, ClaseForm, PeriodoAcademicoForm, InscribirEstudiantesForm, BitacoraForm, PagoForm, CargoForm
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
-from .models import PeriodoAcademico, Clase, Curso, BitacoraPedagogica
+from .models import PeriodoAcademico, Clase, Curso, BitacoraPedagogica, Pago, Cargo
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 import datetime
 from users.models import Maestro
@@ -246,3 +246,85 @@ class BitacoraDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def get_success_url(self):
         return reverse_lazy('bitacora_list', kwargs={'clase_pk': self.object.clase.pk})
+    
+class CargoListView(ListView):
+    """
+    (R)ead: Muestra la lista de todos los cargos.
+    """
+    model = Cargo
+    template_name = 'academico/cargo_list.html'
+    context_object_name = 'cargos'
+    
+    def get_queryset(self):
+        # Muestra los cargos más recientes primero
+        return Cargo.objects.all().select_related('estudiante__user').order_by('-fecha_emision')
+
+class CargoCreateView(CreateView):
+    """
+    (C)reate: Muestra un formulario para crear un nuevo cargo.
+    """
+    model = Cargo
+    form_class = CargoForm
+    template_name = 'academico/cargo_form.html'
+    success_url = reverse_lazy('cargo_list') # A dónde ir después de crear
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['titulo'] = 'Crear Nuevo Cargo'
+        return context
+
+class CargoUpdateView(UpdateView):
+    """
+    (U)pdate: Muestra el formulario para editar un cargo existente.
+    """
+    model = Cargo
+    form_class = CargoForm
+    template_name = 'academico/cargo_form.html'
+    success_url = reverse_lazy('cargo_list') # A dónde ir después de editar
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['titulo'] = 'Editar Cargo'
+        return context
+    
+class RegistrarPagoView(CreateView):
+    """
+    Registra un nuevo pago para un cargo específico.
+    """
+    model = Pago
+    form_class = PagoForm
+    template_name = 'academico/pago_form.html'
+    success_url = reverse_lazy('cargo_list') # Vuelve a la lista de cargos
+
+    def get_context_data(self, **kwargs):
+        """Añade el cargo (la factura) al contexto."""
+        context = super().get_context_data(**kwargs)
+        # Obtenemos el cargo de la URL
+        context['cargo'] = get_object_or_404(Cargo, pk=self.kwargs['cargo_pk'])
+        context['titulo'] = 'Registrar Pago'
+        return context
+
+    def get_form_kwargs(self):
+        """Pasa el 'cargo' al __init__ del formulario."""
+        kwargs = super().get_form_kwargs()
+        kwargs['cargo'] = get_object_or_404(Cargo, pk=self.kwargs['cargo_pk'])
+        return kwargs
+
+    def form_valid(self, form):
+        """
+        Asigna el cargo y el estudiante al pago antes de guardarlo.
+        """
+        cargo = get_object_or_404(Cargo, pk=self.kwargs['cargo_pk'])
+        
+        # Asignamos las claves foráneas que faltan
+        form.instance.cargo = cargo
+        form.instance.estudiante = cargo.estudiante
+        
+        # Guardamos el pago
+        response = super().form_valid(form)
+        
+        # ¡IMPORTANTE!
+        # La señal (signal) que creamos se disparará automáticamente aquí,
+        # llamará a cargo.actualizar_estado() y marcará el cargo como "Pagado".
+        
+        return response

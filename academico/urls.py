@@ -24,4 +24,8 @@ urlpatterns = [
     path('bitacora/<int:clase_pk>/nuevo/', views.BitacoraCreateView.as_view(), name='bitacora_create'),
     path('bitacora/<int:clase_pk>/<int:pk>/editar/', views.BitacoraUpdateView.as_view(), name='bitacora_update'),
     path('bitacora/<int:clase_pk>/<int:pk>/eliminar/', views.BitacoraDeleteView.as_view(), name='bitacora_delete'),
+    path('cargos/', views.CargoListView.as_view(), name='cargo_list'),
+    path('cargos/nuevo/', views.CargoCreateView.as_view(), name='cargo_create'),
+    path('cargos/<int:pk>/editar/', views.CargoUpdateView.as_view(), name='cargo_update'),
+    path('cargo/<int:cargo_pk>/registrar-pago/', views.RegistrarPagoView.as_view(), name='registrar_pago'),
 ]

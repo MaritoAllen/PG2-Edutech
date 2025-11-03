@@ -348,3 +348,42 @@ class Planificacion(models.Model):
 
     def __str__(self):
         return self.titulo
+    
+class Grado(models.Model):
+    """
+    Representa un "paquete" o plantilla para un grado/sección.
+    Define las clases (horario) y los costos asociados.
+    Ej: "1ro Primaria - Sección A"
+    """
+    nombre = models.CharField(max_length=100, unique=True)
+    periodo = models.ForeignKey(PeriodoAcademico, on_delete=models.PROTECT, related_name="grados")
+    
+    # --- Parte Académica (La plantilla de horario) ---
+    clases = models.ManyToManyField(
+        Clase,
+        blank=True,
+        related_name="grados_asignados",
+        verbose_name="Plantilla de Clases"
+    )
+    
+    # --- Parte Financiera (La plantilla de costos) ---
+    monto_inscripcion = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0.00,
+        verbose_name="Monto de Inscripción"
+    )
+    monto_utiles = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0.00,
+        verbose_name="Monto de Útiles/Libros"
+    )
+    monto_colegiatura_mensual = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0.00,
+        verbose_name="Monto de Colegiatura Mensual"
+    )
+
+    class Meta:
+        verbose_name = "Grado (Plantilla)"
+        verbose_name_plural = "Grados (Plantillas)"
+        ordering = ['nombre']
+
+    def __str__(self):
+        return f"{self.nombre} ({self.periodo.nombre})"
