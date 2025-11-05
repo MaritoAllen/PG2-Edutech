@@ -16,7 +16,6 @@ class MaestroListView(ListView):
     model = Maestro
     template_name = 'users/maestros/lista.html'
     context_object_name = 'maestros' # 👈 Usaremos 'maestros' en el template
-    paginate_by = 10  # Muestra 10 maestros por página
 
     def get_queryset(self):
         """
