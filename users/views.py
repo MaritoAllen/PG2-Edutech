@@ -87,7 +87,7 @@ class MaestroCreateView(CreateView):
 class MaestroUpdateView(UpdateView):
     model = Maestro
     form_class = MaestroForm
-    template_name = 'users/maestro_form.html'
+    template_name = 'users/maestros/maestro_form.html'
     success_url = reverse_lazy('maestro_list')
     
     def form_valid(self, form):
