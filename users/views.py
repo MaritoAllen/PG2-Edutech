@@ -88,7 +88,7 @@ class MaestroUpdateView(UpdateView):
     model = Maestro
     form_class = MaestroForm
     template_name = 'users/maestros/maestro_form.html'
-    success_url = reverse_lazy('maestro_list')
+    success_url = reverse_lazy('maestros')
     
     def form_valid(self, form):
         with transaction.atomic():
@@ -103,7 +103,7 @@ class MaestroUpdateView(UpdateView):
 class MaestroDeleteView(DeleteView):
     model = Maestro
     template_name = 'users/maestro_confirm_delete.html'
-    success_url = reverse_lazy('maestro_list')
+    success_url = reverse_lazy('maestros')
 
 class EstudianteListView(ListView):
     model = Estudiante
