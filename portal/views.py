@@ -8,8 +8,7 @@ from datetime import datetime, timedelta
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, get_object_or_404, render
 from django.urls import reverse_lazy, reverse
-from django.db.models import Exists, OuterRef, Subquery, DecimalField
-from django.db.models import Q
+from django.db.models import Exists, OuterRef, Subquery, DecimalField, Avg, Q
 from .models import Notificacion
 from django.utils import timezone
 from django.forms import formset_factory
@@ -571,4 +570,51 @@ class PadreMisCalificacionesView(LoginRequiredMixin, UserPassesTestMixin, ListVi
         context['titulo'] = f"Calificaciones de {estudiante.user.first_name}"
         context['es_padre'] = True # Bandera para la plantilla
         context['estudiante'] = estudiante # Para el enlace de "Volver"
+        return context
+    
+class CalificacionesPeriodoView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    """
+    Muestra la "boleta" o el reporte de calificaciones finales
+    de un estudiante para un periodo específico.
+    """
+    template_name = 'portal/calificaciones_periodo.html'
+
+    def test_func(self):
+        # Pueden entrar estudiantes o padres (viendo a un hijo)
+        return self.request.user.user_type in [User.UserType.ESTUDIANTE, User.UserType.PADRE]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Determinamos qué estudiante estamos viendo
+        if self.request.user.user_type == User.UserType.ESTUDIANTE:
+            estudiante = self.request.user.estudiante
+        else:
+            # (Si es un padre, asumimos que el PK del estudiante viene en la URL)
+            # Esta lógica la podemos refinar luego
+            estudiante = get_object_or_404(Estudiante, pk=self.kwargs.get('estudiante_pk'))
+            context['es_padre'] = True
+            
+        # Obtenemos el periodo seleccionado (de la sesión)
+        periodo_actual_id = self.request.session.get('periodo_seleccionado_id')
+        periodo = get_object_or_404(PeriodoAcademico, pk=periodo_actual_id)
+        
+        # --- LA CONSULTA CLAVE ---
+        # Agrupa todas las entregas por curso y calcula el promedio
+        calificaciones_finales = Entrega.objects.filter(
+            estudiante=estudiante,
+            actividad__clase__periodo=periodo,
+            calificacion__isnull=False
+        ).values(
+            'actividad__clase__curso__nombre' # Agrupar por nombre de curso
+        ).annotate(
+            promedio_final=Avg('calificacion') # Calcular el promedio
+        ).order_by(
+            'actividad__clase__curso__nombre'
+        )
+        
+        context['estudiante'] = estudiante
+        context['periodo'] = periodo
+        context['reporte_notas'] = calificaciones_finales
+        context['titulo'] = f"Boleta de Calificaciones - {periodo.nombre}"
         return context

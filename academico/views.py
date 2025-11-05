@@ -205,6 +205,13 @@ class BitacoraCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     form_class = BitacoraForm
     template_name = 'academico/bitacora_form.html'
 
+    def get_form_kwargs(self):
+        """Pasa la 'clase' actual al __init__ del formulario."""
+        kwargs = super().get_form_kwargs()
+        # Esta línea es la importante
+        kwargs['clase'] = get_object_or_404(Clase, pk=self.kwargs['clase_pk'])
+        return kwargs
+
     def test_func(self):
         clase = get_object_or_404(Clase, pk=self.kwargs['clase_pk'])
         return self.request.user.maestro == clase.maestro

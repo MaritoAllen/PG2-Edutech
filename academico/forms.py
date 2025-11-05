@@ -1,5 +1,5 @@
 from django import forms
-from .models import Curso, Clase, PeriodoAcademico, BitacoraPedagogica, Cargo, Pago
+from .models import Curso, Clase, PeriodoAcademico, BitacoraPedagogica, Cargo, Pago, Planificacion
 from users.models import Estudiante
 
 class CursoForm(forms.ModelForm):
@@ -82,6 +82,7 @@ class BitacoraForm(forms.ModelForm):
             'fecha', 
             'objetivos_sesion',
             'temas_cubiertos', 
+            'planificacion',
             'recursos_usados',
             'adaptacion_curricular',
             'observaciones_generales',
@@ -98,6 +99,16 @@ class BitacoraForm(forms.ModelForm):
             'observaciones_generales': forms.Textarea(attrs={'rows': 4}),
             'reflexiones_logros': forms.Textarea(attrs={'rows': 3}),
         }
+    
+    def __init__(self, *args, **kwargs):
+        # Obtenemos la 'clase' que pasamos desde la vista
+        clase = kwargs.pop('clase', None)
+        super().__init__(*args, **kwargs)
+
+        if clase:
+            # Filtramos el <select> para que muestre SOLO
+            # las planificaciones de esta clase.
+            self.fields['planificacion'].queryset = Planificacion.objects.filter(clase=clase)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

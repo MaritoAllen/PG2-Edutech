@@ -22,4 +22,5 @@ urlpatterns = [
     path('padre/', views.PortalPadreView.as_view(), name='portal_padre'),
     path('padre/ver/<str:estudiante_pk>/', views.PadreEstudianteDashboardView.as_view(), name='portal_padre_ver_estudiante'),
     path('padre/ver/<str:estudiante_pk>/calificaciones/', views.PadreMisCalificacionesView.as_view(), name='portal_padre_calificaciones'),
+    path('estudiante/boleta/', views.CalificacionesPeriodoView.as_view(), name='boleta_estudiante'),
 ]

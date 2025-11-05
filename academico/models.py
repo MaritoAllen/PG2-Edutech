@@ -138,62 +138,7 @@ class Entrega(models.Model):
     def __str__(self):
         return f"Entrega de {self.estudiante.user.get_full_name()} para {self.actividad.titulo}"
 
-class BitacoraPedagogica(models.Model):
-    """
-    Representa una entrada en el diario pedagógico de un maestro para una clase específica
-    en una fecha concreta.
-    """
-    clase = models.ForeignKey(Clase, on_delete=models.CASCADE, related_name='bitacoras')
-    fecha = models.DateField(verbose_name="Fecha de la Entrada")
-    temas_cubiertos = models.TextField(verbose_name="Temas Cubiertos")
-    objetivos_sesion = models.TextField(blank=True, verbose_name="Objetivos de la Sesión")
-    temas_cubiertos = models.TextField(verbose_name="Temas Cubiertos / Actividades Realizadas")
-    recursos_usados = models.TextField(blank=True, verbose_name="Recursos Usados")
-    adaptacion_curricular = models.TextField(blank=True, verbose_name="Adaptación Curricular")
-    tiempo_sesion_minutos = models.IntegerField(null=True, blank=True, verbose_name="Tiempo de la Sesión (minutos)")
-    observaciones_generales = models.TextField(blank=True, verbose_name="Observaciones Generales (grupo, etc.)")
-    objetivos_sesion = models.TextField(
-        blank=True, 
-        verbose_name="Objetivos de la Sesión"
-    )
-    recursos_usados = models.TextField(
-        blank=True, 
-        verbose_name="Recursos Usados"
-    )
-    adaptacion_curricular = models.TextField(
-        blank=True, 
-        verbose_name="Adaptación Curricular"
-    )
-    observaciones_generales = models.TextField(
-        blank=True, 
-        verbose_name="Observaciones (Comportamiento, Aprendizaje)"
-    )
-    
-    # --- NUEVOS CAMPOS DE EVIDENCIA ---
-    reflexiones_logros = models.TextField(
-        blank=True, 
-        verbose_name="Reflexiones sobre Logro de Objetivos"
-    )
-    evidencia_archivo = models.FileField(
-        upload_to='bitacora/archivos/', 
-        blank=True, null=True, 
-        verbose_name="Archivo de Evidencia (muestra, PDF, etc.)"
-    )
-    evidencia_foto = models.ImageField(
-        upload_to='bitacora/fotos/', 
-        blank=True, null=True, 
-        verbose_name="Foto de Evidencia"
-    )
 
-    class Meta:
-        verbose_name = "Bitácora Pedagógica"
-        verbose_name_plural = "Bitácoras Pedagógicas"
-        ordering = ['-fecha']
-        # Un maestro solo puede tener una entrada de bitácora por clase y por día
-        unique_together = ('clase', 'fecha')
-
-    def __str__(self):
-        return f"Bitácora del {self.fecha} - {self.clase.curso.nombre}"
     
 class Cargo(models.Model):
     """
@@ -387,3 +332,69 @@ class Grado(models.Model):
 
     def __str__(self):
         return f"{self.nombre} ({self.periodo.nombre})"
+
+class BitacoraPedagogica(models.Model):
+    """
+    Representa una entrada en el diario pedagógico de un maestro para una clase específica
+    en una fecha concreta.
+    """
+    clase = models.ForeignKey(Clase, on_delete=models.CASCADE, related_name='bitacoras')
+    planificacion = models.ForeignKey(
+        Planificacion,
+        on_delete=models.SET_NULL, # Si se borra el plan, no se borra el diario
+        null=True,
+        blank=True, # Hacemos que sea opcional
+        related_name='entradas_diario',
+        verbose_name="Planificación Asociada"
+    )
+    fecha = models.DateField(verbose_name="Fecha de la Entrada")
+    temas_cubiertos = models.TextField(verbose_name="Temas Cubiertos")
+    objetivos_sesion = models.TextField(blank=True, verbose_name="Objetivos de la Sesión")
+    temas_cubiertos = models.TextField(verbose_name="Temas Cubiertos / Actividades Realizadas")
+    recursos_usados = models.TextField(blank=True, verbose_name="Recursos Usados")
+    adaptacion_curricular = models.TextField(blank=True, verbose_name="Adaptación Curricular")
+    tiempo_sesion_minutos = models.IntegerField(null=True, blank=True, verbose_name="Tiempo de la Sesión (minutos)")
+    observaciones_generales = models.TextField(blank=True, verbose_name="Observaciones Generales (grupo, etc.)")
+    objetivos_sesion = models.TextField(
+        blank=True, 
+        verbose_name="Objetivos de la Sesión"
+    )
+    recursos_usados = models.TextField(
+        blank=True, 
+        verbose_name="Recursos Usados"
+    )
+    adaptacion_curricular = models.TextField(
+        blank=True, 
+        verbose_name="Adaptación Curricular"
+    )
+    observaciones_generales = models.TextField(
+        blank=True, 
+        verbose_name="Observaciones (Comportamiento, Aprendizaje)"
+    )
+    
+    # --- NUEVOS CAMPOS DE EVIDENCIA ---
+    reflexiones_logros = models.TextField(
+        blank=True, 
+        verbose_name="Reflexiones sobre Logro de Objetivos"
+    )
+    evidencia_archivo = models.FileField(
+        upload_to='bitacora/archivos/', 
+        blank=True, null=True, 
+        verbose_name="Archivo de Evidencia (muestra, PDF, etc.)"
+    )
+    evidencia_foto = models.ImageField(
+        upload_to='bitacora/fotos/', 
+        blank=True, null=True, 
+        verbose_name="Foto de Evidencia"
+    )
+
+    class Meta:
+        verbose_name = "Bitácora Pedagógica"
+        verbose_name_plural = "Bitácoras Pedagógicas"
+        ordering = ['-fecha']
+        # Un maestro solo puede tener una entrada de bitácora por clase y por día
+        unique_together = ('clase', 'fecha')
+
+    def __str__(self):
+        return f"Bitácora del {self.fecha} - {self.clase.curso.nombre}"
+    
