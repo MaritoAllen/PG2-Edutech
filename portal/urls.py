@@ -23,4 +23,5 @@ urlpatterns = [
     path('padre/ver/<str:estudiante_pk>/', views.PadreEstudianteDashboardView.as_view(), name='portal_padre_ver_estudiante'),
     path('padre/ver/<str:estudiante_pk>/calificaciones/', views.PadreMisCalificacionesView.as_view(), name='portal_padre_calificaciones'),
     path('estudiante/boleta/', views.CalificacionesPeriodoView.as_view(), name='boleta_estudiante'),
+    path('cambiar-periodo/', views.CambiarPeriodoView.as_view(), name='cambiar_periodo'),
 ]

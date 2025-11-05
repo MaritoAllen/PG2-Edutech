@@ -12,22 +12,65 @@
 </head>
 
 <body class="bg-gray-100 font-sans">
-    
     <nav class="bg-gray-800 shadow-lg">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center h-16">
+                
                 <div class="flex-shrink-0">
                     <a href="" class="text-white text-2xl font-bold">🎓 Edutech</a>
                 </div>
-                
+
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-4">
-                        <a href="{% url 'home' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Inicio</a>
-                        <a href="{% url 'maestros' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Maestros</a>
-                        <a href="{% url 'gestion_cursos' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Cursos</a>
-                        <a href="{% url 'estudiante_list' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Estudiantes</a>
-                        <a href="{% url 'horario' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Horario</a>
-                        <a href="{% url 'periodo_list' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Periodos</a>
+                        
+                        {% if user.is_authenticated %}
+                            
+                            {% if user.user_type == 'ADMIN' %}
+                                <a href="{% url 'admin:index' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Panel Admin</a>
+                                <a href="{% url 'maestro_list' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Maestros</a>
+                                <a href="{% url 'estudiante_list' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Estudiantes</a>
+                                <a href="{% url 'curso_list' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Cursos</a>
+                                <a href="{% url 'periodo_list' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Periodos</a>
+                                <a href="{% url 'cargo_list' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Cargos</a>
+
+                            {% elif user.user_type == 'MAESTRO' %}
+                                <a href="{% url 'portal_maestro' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Mi Portal</a>
+                                <a href="{% url 'maestro_update' maestro.pk %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Mi Perfil</a>
+
+                            {% elif user.user_type == 'ESTUDIANTE' %}
+                                <a href="{% url 'portal_estudiante' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Mi Portal</a>
+                                <a href="{% url 'mis_calificaciones' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Mis Notas</a>
+                                <a href="{% url 'boleta_estudiante' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Mi Boleta</a>
+
+                            {% elif user.user_type == 'PADRE' %}
+                                <a href="{% url 'portal_padre' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Mi Portal</a>
+                            {% endif %}
+
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="hidden md:block">
+                    <div class="ml-4 flex items-center md:ml-6 space-x-4">
+                        
+                        {% if user.is_authenticated and user.user_type != 'ADMIN' %}
+                        <form action="{% url 'cambiar_periodo' %}" method="POST" class="flex items-center">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                            <label for="periodo_select" class="text-sm font-medium text-gray-300 mr-2">Periodo:</label>
+                            <select name="periodo_id" id="periodo_select" 
+                                    onchange="this.form.submit()" 
+                                    class="bg-gray-700 text-white text-sm rounded-md border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 py-1">
+                                
+                                {% for periodo in lista_todos_periodos %}
+                                    <option value="{{ periodo.pk }}" {% if periodo.pk == periodo_seleccionado_id %}selected{% endif %}>
+                                        {{ periodo.nombre }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                        {% endif %}
+
                         {% if user.is_authenticated %}
                             <form action="{% url 'logout' %}" method="post" class="inline">
                                 {% csrf_token %}
@@ -40,13 +83,7 @@
                 </div>
 
                 <div class="-mr-2 flex md:hidden">
-                    <button type="button" class="bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none">
-                        <span class="sr-only">Abrir menú principal</span>
-                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
-                        </svg>
-                    </button>
-                </div>
+                    </div>
             </div>
         </div>
     </nav>

@@ -14,6 +14,7 @@ from django.utils import timezone
 from django.forms import formset_factory
 from django.views import View
 from collections import defaultdict
+from django.http import HttpResponseBadRequest
 from django.db import transaction
 
 
@@ -618,3 +619,79 @@ class CalificacionesPeriodoView(LoginRequiredMixin, UserPassesTestMixin, Templat
         context['reporte_notas'] = calificaciones_finales
         context['titulo'] = f"Boleta de Calificaciones - {periodo.nombre}"
         return context
+    
+class PeriodoSeleccionadoMixin:
+    """
+    Mixin que proporciona el método get_periodo_actual()
+    leyendo desde la sesión, con un fallback inteligente.
+    """
+    def get_periodo_actual(self):
+        # 1. Intentar obtener el periodo desde la sesión (lo que el usuario eligió)
+        periodo_id = self.request.session.get('periodo_seleccionado_id')
+        periodo_actual = None
+        
+        if periodo_id:
+            try:
+                periodo_actual = PeriodoAcademico.objects.get(pk=periodo_id)
+            except PeriodoAcademico.DoesNotExist:
+                # El ID en la sesión era inválido o viejo, lo borramos
+                if 'periodo_seleccionado_id' in self.request.session:
+                     del self.request.session['periodo_seleccionado_id']
+
+        # 2. Si no hay nada en la sesión (es la primera visita o se borró)
+        #    usamos el fallback inteligente.
+        if not periodo_actual:
+            periodo_fallback = None
+            user = self.request.user
+
+            try:
+                # --- INICIO DE LA NUEVA LÓGICA DE FALLBACK ---
+                if user.user_type == User.UserType.ESTUDIANTE and user.estudiante.grado:
+                    # FALLBACK 1: El periodo del grado del estudiante
+                    periodo_fallback = user.estudiante.grado.periodo
+                
+                elif user.user_type == User.UserType.PADRE and user.padre_familia.hijos.exists():
+                    # FALLBACK 2: El periodo del grado del primer hijo
+                    primer_hijo = user.padre_familia.hijos.first()
+                    if primer_hijo and primer_hijo.grado:
+                        periodo_fallback = primer_hijo.grado.periodo
+                # --- FIN DE LA NUEVA LÓGICA DE FALLBACK ---
+
+            except AttributeError: 
+                # Pasa si el estudiante no tiene grado, o el grado no tiene periodo
+                pass 
+            
+            # FALLBACK 3: (Maestros, Admins, o si los fallbacks 1 y 2 fallan)
+            # Usamos el más reciente del sistema.
+            if not periodo_fallback:
+                periodo_fallback = PeriodoAcademico.objects.order_by('-fecha_inicio').first()
+
+            # Asignamos el fallback y lo guardamos en la sesión
+            periodo_actual = periodo_fallback
+            if periodo_actual:
+                self.request.session['periodo_seleccionado_id'] = periodo_actual.pk
+                
+        return periodo_actual
+    
+class CambiarPeriodoView(LoginRequiredMixin, View):
+    """
+    Una vista simple que actualiza el periodo seleccionado
+    en la sesión del usuario y redirige de vuelta.
+    """
+    def post(self, request, *args, **kwargs):
+        periodo_id = request.POST.get('periodo_id')
+        
+        # Obtenemos la URL a la que debemos redirigir (la página actual)
+        # 'inicio' es un fallback seguro.
+        next_url = request.POST.get('next', 'inicio') 
+
+        if not periodo_id:
+            return HttpResponseBadRequest("No se proporcionó un ID de periodo.")
+
+        try:
+            # Guardamos el ID en la sesión
+            request.session['periodo_seleccionado_id'] = int(periodo_id)
+        except ValueError:
+            return HttpResponseBadRequest("ID de periodo inválido.")
+        
+        return redirect(next_url)
