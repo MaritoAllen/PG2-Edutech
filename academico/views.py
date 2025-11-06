@@ -48,25 +48,26 @@ class HorarioView(View):
 
         dias_semana = Clase.DiaSemana.choices
         # Generar franjas horarias (ej. de 7am a 5pm)
-        horas = [datetime.time(h) for h in range(7, 18)] 
-        
+        horas = list(range(7, 18))
         # Obtener todas las clases del periodo actual para pintarlas en la tabla
-        clases = Clase.objects.filter(periodo=periodo_actual).select_related('curso', 'maestro__user')
-        
-        horario = {}
-        for hora in horas:
-            horario[hora] = {dia[0]: None for dia in dias_semana}
+        clases = Clase.objects.filter(periodo=periodo_actual).select_related('curso', 'maestro__user').order_by('hora_inicio')
 
+        horario_grid = {hora: {dia[0]: [] for dia in dias_semana} for hora in horas}
         for clase in clases:
-            # Simplificación: Asume que la clase empieza en una hora en punto.
-            # Una lógica más compleja manejaría bloques de más de 1 hora.
-            if clase.hora_inicio in horario:
-                horario[clase.hora_inicio][clase.dia_semana] = clase
+            # Obtenemos la hora como entero (ej. 8:30 -> 8)
+            hora_int = clase.hora_inicio.hour
+            dia_str = clase.dia_semana
+            
+            # Verificamos si la hora está en nuestro rango visible (7am-5pm)
+            if hora_int in horario_grid:
+                # Añadimos la clase a la lista de esa celda
+                horario_grid[hora_int][dia_str].append(clase)
 
         context = {
             'periodos': PeriodoAcademico.objects.all(),
             'periodo_actual': periodo_actual,
-            'horario': horario,
+            'horario_grid': horario_grid,
+            'horas': horas,
             'dias_semana': dias_semana
         }
         return render(request, 'academico/horario.html', context)

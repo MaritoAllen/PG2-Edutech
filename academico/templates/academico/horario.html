@@ -23,30 +23,31 @@
                     {% endfor %}
                 </tr>
             </thead>
-            <tbody>
-                {% for hora, dias in horario.items %}
+            
+            <tbody class="divide-y divide-gray-200">
+                {% for hora in horas %}
                 <tr>
-                    <td class="border border-gray-300 p-2 font-mono bg-gray-50">{{ hora|time:"H:i" }}</td>
-                    {% for dia_cod, clase in dias.items %}
-                        <td class="border border-gray-300 p-2 align-top h-24">
-                            {% if clase %}
-                            <div class="bg-blue-100 p-2 rounded relative group">
-                                <p class="font-bold text-sm text-blue-800">{{ clase.curso.nombre }}</p>
-                                <p class="text-xs text-gray-600">{{ clase.maestro.user.get_full_name }}</p>
-                                
-                                <p class="text-xs text-blue-600 mt-1">
-                                    {{ clase.estudiantes.count }} estudiante(s) inscrito(s)
-                                </p>
-
-                                <div class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
-                                    <a href="{% url 'clase_inscribir_estudiantes' clase.pk %}" title="Inscribir Estudiantes" class="text-lg text-green-600 hover:text-green-900">👥</a>
-                                    
-                                    <a href="{% url 'clase_update' clase.pk %}" title="Editar Clase" class="text-indigo-600 hover:text-indigo-900">✏️</a>
-                                    <a href="{% url 'clase_delete' clase.pk %}" title="Eliminar Clase" class="text-red-600 hover:text-red-900">🗑️</a>
-                                </div>
+                    <td class="border border-gray-300 p-2 font-mono bg-gray-50 align-top">
+                        {{ hora }}:00 - {{ hora }}:59
+                    </td>
+                    
+                    {% for dia_cod, dia_nombre in dias_semana %}
+                    <td class="border border-gray-300 p-2 align-top h-28">
+                        
+                        {% for clase in horario_grid|get_item:hora|get_item:dia_cod %}
+                        <div class="bg-blue-100 p-2 rounded mb-2 relative group">
+                            <p class="font-bold text-sm text-blue-800">
+                                {{ clase.hora_inicio|time:"H:i" }} - {{ clase.curso.nombre }}
+                            </p>
+                            <p class="text-xs text-gray-600">{{ clase.maestro.user.get_full_name }}</p>
+                            
+                            <div class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <a href="{% url 'clase_update' clase.pk %}" class="text-xs text-indigo-600 hover:text-indigo-900">✏️</a>
+                                <a href="{% url 'clase_delete' clase.pk %}" class="text-xs text-red-600 hover:text-red-900 ml-1">🗑️</a>
                             </div>
-                            {% endif %}
-                        </td>
+                        </div>
+                        {% endfor %}
+                    </td>
                     {% endfor %}
                 </tr>
                 {% endfor %}
