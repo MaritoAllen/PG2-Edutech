@@ -40,6 +40,7 @@
                                 <a href="{% url 'portal_estudiante' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Mi Portal</a>
                                 <a href="{% url 'mis_calificaciones' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Mis Notas</a>
                                 <a href="{% url 'boleta_estudiante' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Mi Boleta</a>
+                                <a href="{% url 'horario' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Horario</a>
 
                             {% elif user.user_type == 'PADRE' %}
                                 <a href="{% url 'portal_padre' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Mi Portal</a>
